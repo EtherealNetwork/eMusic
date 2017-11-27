@@ -9,6 +9,7 @@ If all you want to do is use the bot without creating your own instance:
 https://discordapp.com/api/oauth2/authorize?client_id=277298573794607105&scope=bot&permissions=1
 
 Bot may go down unexpectantly if I am working on it, but should be back up in a few moments.
+Happens very rarely.
 
 ## Creating Own Instance
 
