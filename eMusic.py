@@ -11,7 +11,6 @@ from PlayerPlaylist import PlayerPlaylist
 properties_file_path = 'emusic_properties.yml'
 exception_log_path = 'emusic_exception_log.txt'
 
-BOT_NAME = ''
 BOT_ID = ''
 BOT_TOKEN = ''
 CMD_PREFIX = ''
@@ -27,11 +26,10 @@ def initialize_bot():
     if os.path.isfile(properties_file_path):
         properties = yaml.load(open(properties_file_path))
 
-        if len(properties) < 4:
+        if len(properties) < 3:
             print('Missing properties; bot may not work properly.')
 
-        global BOT_NAME, BOT_ID, BOT_TOKEN, CMD_PREFIX, bot
-        BOT_NAME = properties['bot-name']
+        global BOT_ID, BOT_TOKEN, CMD_PREFIX, bot
         BOT_ID = properties['bot-id']
         BOT_TOKEN = properties['bot-token']
         CMD_PREFIX = properties['cmd-prefix']
@@ -59,12 +57,7 @@ initialize_bot()
 
 @bot.event
 async def on_ready():
-    global BOT_NAME
-    if BOT_NAME is None or BOT_NAME == '':
-        BOT_NAME = bot.user.name
-
     print('Successfully logged in as:', bot.user)
-    print("Using {} as the bot's name.".format(BOT_NAME))
     print('Add me to a server via: https://discordapp.com/api/oauth2/authorize?client_id={}&scope=bot&permissions=1'
           .format(BOT_ID))
 
@@ -75,7 +68,8 @@ async def on_message(message):
         return
 
     # Allows the use of a custom help command.
-    if message.content.lower() == '?' + BOT_NAME.lower() or message.content.lower() == CMD_PREFIX + BOT_NAME.lower():
+    bot_name = bot.user.name.lower()
+    if message.content.lower() == '?' + bot_name or message.content.lower() == CMD_PREFIX + bot_name:
         await show_help(message.author)
         return
 
@@ -98,13 +92,13 @@ async def join(ctx):
         if voice_client is None:
             await bot.say('Unable to connect to a voice channel.')
         else:
-            await bot.say('{} connected to: {}'.format(BOT_NAME, voice_client.channel.name))
+            await bot.say('{} connected to: {}'.format(bot.user.name, voice_client.channel.name))
     elif len(cmd_args) == 1:
         voice_client = await get_voice_client(author, server, None)
         if voice_client is None:
             await bot.say('Unable to connect to a voice channel.')
         else:
-            await bot.say('{} connected to: {}'.format(BOT_NAME, voice_client.channel.name))
+            await bot.say('{} connected to: {}'.format(bot.user.name, voice_client.channel.name))
     else:
         arg_channel = ''
         for arg in cmd_args[1:]:
@@ -115,7 +109,7 @@ async def join(ctx):
         if voice_client is None:
             await bot.say('Unable to connect to voice channel **{}**.'.format(arg_channel))
         else:
-            await bot.say('{} connected to: {}'.format(BOT_NAME, voice_client.channel.name))
+            await bot.say('{} connected to: {}'.format(bot.user.name, voice_client.channel.name))
 
 
 @bot.command(pass_context=True, aliases=['disconnect'])
@@ -128,10 +122,10 @@ async def leave(ctx):
                 if author in channel.voice_members:
                     voice_client = bot.voice_client_in(s)
                     if voice_client is None:
-                        await bot.say('{} is not currently connected to a voice channel.'.format(BOT_NAME))
+                        await bot.say('{} is not currently connected to a voice channel.'.format(bot.user.name))
                     else:
                         await voice_client.disconnect()
-                        await bot.say('{} disconnected from: {}'.format(BOT_NAME, voice_client.channel.name))
+                        await bot.say('{} disconnected from: {}'.format(bot.user.name, voice_client.channel.name))
     elif bot.is_voice_connected(server):
         voice_client = None
         for vc in list(bot.voice_clients):
@@ -139,12 +133,12 @@ async def leave(ctx):
                 voice_client = vc
                 break
         if voice_client is None:
-            await bot.say('{} is not currently connected to a voice channel.'.format(BOT_NAME))
+            await bot.say('{} is not currently connected to a voice channel.'.format(bot.user.name))
         else:
             await voice_client.disconnect()
-            await bot.say('{} disconnected from: {}'.format(BOT_NAME, voice_client.channel.name))
+            await bot.say('{} disconnected from: {}'.format(bot.user.name, voice_client.channel.name))
     else:
-        await bot.say('{} is not currently connected to a voice channel.'.format(BOT_NAME))
+        await bot.say('{} is not currently connected to a voice channel.'.format(bot.user.name))
 
 
 @bot.command(pass_context=True, aliases=['start'])
@@ -351,7 +345,7 @@ async def clear(ctx):
 
 @bot.command(pass_context=True, aliases=['restart'])
 async def reset(ctx):
-    await bot.say('{} is resetting; this may take a moment.'.format(BOT_NAME))
+    await bot.say('{} is resetting; this may take a moment.'.format(bot.user.name))
     server = ctx.message.server
     if server is None:
         server = get_voice_connected_server(ctx.message.author)
@@ -369,10 +363,10 @@ async def reset(ctx):
         if voice_client is not None:
             voice_channel_name = voice_client.channel.name
             await voice_client.disconnect()
-            await bot.say('{} has disconnected from **{}**.'.format(BOT_NAME, voice_channel_name))
+            await bot.say('{} has disconnected from **{}**.'.format(bot.user.name, voice_channel_name))
         SERVER_PLAYERS[server_id] = None
         await bot.say('Player has been cleared.')
-    await bot.say('{} has finished resetting.'.format(BOT_NAME))
+    await bot.say('{} has finished resetting.'.format(bot.user.name))
 
 
 # ----- Functions -----
@@ -565,7 +559,7 @@ async def queue_em_info(titles, total_duration, page):
 
 # Shows the available commands.
 async def show_help(member):
-    em = discord.Embed(title='eMusic Bot', description='Plays music from media links.', colour=0x0000ff)
+    em = discord.Embed(title='{}'.format(bot.user.name), description='Plays music from media links.', colour=0x0000ff)
     em.add_field(name='{}join | {}connect'.format(CMD_PREFIX, CMD_PREFIX),
                  value='Joins the voice channel of the user if possible.',
                  inline=False)
@@ -600,7 +594,7 @@ async def show_help(member):
     em.add_field(name='{}reset | {}restart'.format(CMD_PREFIX, CMD_PREFIX),
                  value='Stops playback, clears the queue, and disconnects from the VoiceChannel.',
                  inline=False)
-    em.add_field(name='?{} | {}{}'.format(BOT_NAME, CMD_PREFIX, BOT_NAME),
+    em.add_field(name='?{} | {}{}'.format(bot.user.name, CMD_PREFIX, bot.user.name),
                  value='Messages the user a list of commands.',
                  inline=False)
     await bot.send_message(member, embed=em)
