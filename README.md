@@ -2,9 +2,9 @@
 Python 3.6 music bot for Ethereal Network's Discord.
 
 ### Known issues
-WARNING: unable to download video info webpage: HTTP Error 500: Internal Server Error
-[tls @ 0000000000d09880] Unable to read from socket
-[tls @ 0000000000d09880] Failed to send close message
+<br>WARNING: unable to download video info webpage: HTTP Error 500: Internal Server Error
+<br>[tls @ 0000000000d09880] Unable to read from socket
+<br>[tls @ 0000000000d09880] Failed to send close message
 
 These do not effect functionality at this time.
 
