@@ -443,6 +443,8 @@ async def create_player(voice_client, source):
         default_search="auto",
         quiet=True,
         nocheckcertificate=True,
+        ignoreerrors=True,
+        no_warnings=True,
     )
 
     player = await voice_client.create_ytdl_player(
